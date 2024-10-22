@@ -2,6 +2,19 @@
 # This file can be sourced or executed.
 # More information below at the "Execution" section
 
+conf="${HOME}/.config/.todo"
+# Define a log file to track actions
+log_file="${HOME}/.config/todo_log"
+
+# Create config file if it doesn't exist
+[[ -f "${conf}" ]] || touch "${conf}"  
+# Remove empty lines from the config file
+sed -i '/^\s*$/d' "${conf}"  
+
+# Log function to track actions with timestamps
+function log_action(){
+    echo "$(date "+%Y-%m-%d %H:%M:%S") - $1" >> "${log_file}"
+}
 # Todo Function
 function todo() {
     local conf="${HOME}/.config/.todo"
@@ -50,7 +63,7 @@ EOF
                     echo "Error: Please provide an index number to remove."
                     return 1
                 fi
-                if ! [[ "$2" =~ ^[0-9]+$ ]]; then
+                if ! [[ "$2" =~ ^[0-9]+$ ]] || [["$2 -le 0]]; then
                     echo "Error: Index must be a valid positive integer."
                     return 1
                 fi
@@ -63,6 +76,7 @@ EOF
                     return 1
                 }
                 echo "Item $2 removed."
+                log_action "Removed item as index #$2"
                 return 0
                 ;;
             2)  # Add an item
@@ -75,6 +89,7 @@ EOF
                     return 1
                 }
                 echo "Item added: $2"
+                log_action "Added item: $2"
                 return 0
                 ;;
             3)  # List a specific item
